@@ -1,0 +1,17 @@
+{
+	"Hooks": [
+		{
+			"Token": "93e42247fc03",
+			"ProviderName": "bitbucket:push",
+			"Description": "",
+			"ShellCommand": "workspace/deploy.sh",
+			"Check": {
+				"UserName": "username",
+				"BranchName": "branchname",
+				"RepositoryName": "repositoryname",
+				"Tag": "deploy"
+			},
+			"IsEnabled": true
+		}
+	]
+}
