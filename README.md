@@ -73,6 +73,7 @@ All the magic in the Makefile.
 PIDFILEHUGO := ./hugo.pid
 PIDFILEWEBHOOKS := ./webhooks.pid
 HUGOBASEURL := "https://example.com/cms/"
+PORT := "8082"
 
 ifneq ("$(wildcard $(PIDFILEHUGO))","")
     PIDHUGO=$(shell cat $(PIDFILEHUGO))
@@ -92,7 +93,7 @@ deploy:
 hugo_start:
 ifndef PIDHUGO
     @echo Starting hugo server...
-    @$(shell hugo server -w --source=./blog --config=./blog/config.toml --renderToDisk --baseURL=$(HUGOBASEURL) --appendPort=false > ./logs/hugo_current.log 2>&1 & echo $$! > $(PIDFILEHUGO))
+    @$(shell hugo server -w --port=$(PORT) --source=./blog --config=./blog/config.toml --renderToDisk --baseURL=$(HUGOBASEURL) --appendPort=false > ./logs/hugo_current.log 2>&1 & echo $$! > $(PIDFILEHUGO))
     @echo PID=$(shell cat $(PIDFILEHUGO))
 else
     @echo PID='$(PIDHUGO)'
@@ -149,7 +150,10 @@ server {
     }
 
     location /cms/ {
-        alias /var/www/cms.example.com/blog/public/;
+        proxy_set_header X-Real-IP  $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header Host $host;
+        proxy_pass http://127.0.0.1:8082; # port hugo
     }
 }
 ```
