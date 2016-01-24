@@ -4,27 +4,15 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"regexp"
-	"strings"
 )
 
 func RunServer() {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/hooks/", func(w http.ResponseWriter, r *http.Request) {
+	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Set("X-Version-ID", fmt.Sprintf("%v.%v", CfgVersion, CfgBuildStamp))
 
-		re := regexp.MustCompile("/hooks/(.+)")
-		route := re.FindStringSubmatch(r.URL.Path)
-
-		if len(route) == 0 {
-			log.Println("not valid route, path=" + r.URL.Path)
-
-			w.WriteHeader(http.StatusBadRequest)
-			return
-		}
-
-		token := strings.TrimSpace(route[1])
+		token := r.URL.Query().Get("webhook_key")
 
 		if err := Execute(token, r.Body); err != nil {
 
