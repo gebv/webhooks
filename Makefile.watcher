@@ -1,0 +1,27 @@
+.PHONY: start stop
+
+PIDFILEWEBHOOKS := ./webhooks.pid
+
+ifneq ("$(wildcard $(PIDFILEWEBHOOKS))","")
+	PIDWEBHOOKS=$(shell cat $(PIDFILEWEBHOOKS))
+endif
+
+webhooks_start:
+ifndef PIDWEBHOOKS
+	@echo Starting webhooks listener...
+	@$(shell webhooks -addr=127.0.0.1:8029 > ./logs/webhooks_current.log 2>&1 & echo $$! > $(PIDFILEWEBHOOKS))
+	@echo PID=$(shell cat $(PIDFILEWEBHOOKS))
+else
+	@echo PID='$(PIDWEBHOOKS)'
+endif
+
+webhooks_stop:
+ifdef PIDWEBHOOKS
+	@echo PID=$(PIDWEBHOOKS) Stopping webhooks listener...
+	@cp ./logs/webhooks_current.log ./logs/webhooks_$(BUILDSTAMP).log
+	@echo > ./logs/webhooks_current.log
+
+	@rm $(PIDFILEWEBHOOKS)
+	@kill -9 $(PIDWEBHOOKS)
+else
+	@echo It is stopped
